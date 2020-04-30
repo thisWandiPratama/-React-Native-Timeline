@@ -1,56 +1,132 @@
-import React from 'react'
-import { View } from "react-native";
+import React, { Component } from "react";
+import {
+  Button,
+  View,
+  StyleSheet,
+  Text,
+  ScrollView,
+  TextInput
+} from "react-native";
 
-import { actionCreators } from './src/component/todoListRedux'
-import Title from './src/component/Title'
-import Input from './src/component/Input'
-import List from './src/component/List'
-import store from './src/component/store'
+import { validationHelper } from "./src/component/validaasi/validasi";
 
-class App extends React.Component{
-    state = {}
-
-    componentWillMount() {
-        const { todos } = store.getState()
-        this.setState({todos})
-        this.unsubscribe = store.subscribe(() => {
-            const { todos } = store.getState()
-            this.setState({todos})
-        })
-    }
-
-    componentWillUnmount() {
-        this.unsubscribe()
-    }
-
-    onAddTodo = text => {
-        store.dispatch(actionCreators.add(text))
-    }
-
-    onRemoveTodo = index => {
-        const { todos } = this.state
-        store.dispatch(actionCreators.remove(index))
-        alert(todos[index] + ' ' + 'Berhasil Dihapus')
-    }
-
-
-    render(){
-        const { todos } = this.state
-        return(
-            <View>
-            <Title>
-              To-Do List
-            </Title>
-            <Input
-              placeholder={'Masukan Catatan Anda'}
-              onSubmitEditing={this.onAddTodo}
+class App extends Component {
+  constructor(props) {
+    super(props);    
+	this.state = {
+		inputs: {
+			firstName: {
+				type: 'general',
+				value: ''
+			},
+			lastName: {
+				type: 'general',
+				value: ''
+			},
+			email: {
+				type: 'email',
+				value: ''
+			},
+			password: {
+				type: 'password',
+				value: ''
+			}
+		}
+	};
+	this.onInputChange = validationHelper.onInputChange.bind(this);
+	this.isValidate = validationHelper.isValidate.bind(this);
+	this.onSubmit = this.onSubmit.bind(this);
+	
+  }
+  
+  onSubmit() {
+	console.log(this.state);
+	this.isValidate();
+  }
+  
+  onError(id) {
+	const { inputs } = this.state;
+	if (inputs[id].error) {
+	  return <Text style={styles.errorLabel}>{inputs[id].error}</Text>;
+	}
+	return null;
+  }
+  render() {
+    return (
+      <View style={styles.container}>
+        <ScrollView>
+		  <View style={styles.inputGroup}>
+			<Text style={styles.title}>Form Validasi</Text>
+		  </View>
+          <View  style={styles.inputGroup}>
+            <Text>Nama Depan</Text>
+            <TextInput
+              style={styles.input}
+			  onChangeText={value => this.onInputChange({id: 'firstName', value})}
             />
-            <List
-              list={todos}
-              onPressItem={this.onRemoveTodo}
-            />
+			{this.onError('firstName')}
           </View>
-        )
-    }
+
+          <View style={styles.inputGroup}>
+            <Text>Nama Belakang</Text>
+            <TextInput
+              style={styles.input}
+			  onChangeText={value => this.onInputChange({id: 'lastName', value})}
+            />
+			{this.onError('lastName')}
+          </View>
+		  
+		  <View style={styles.inputGroup}>
+            <Text>Email</Text>
+            <TextInput
+              style={styles.input}
+			  onChangeText={value => this.onInputChange({id: 'email', value})}
+            />
+			 {this.onError('email')}
+          </View>
+		  
+		  <View style={styles.inputGroup}>
+            <Text>Password</Text>
+            <TextInput
+              style={styles.input}
+			  secureTextEntry
+			  onChangeText={value => this.onInputChange({id: 'password', value})}
+            />
+			{this.onError('password')}
+          </View>
+        </ScrollView>
+
+        <View style={styles.button}>
+          <Button title="Submit Form" onPress={() => this.onSubmit()} />
+        </View>
+      </View>
+    );
+  }
 }
-export default App
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 10,
+	paddingTop: 20
+  },
+  title: {
+	fontSize: 16,
+	textAlign: 'center'	
+  },
+  input: {
+	  borderRadius: 5,
+	  borderWidth: 1,
+	  borderColor: '#000000',
+	  alignSelf: 'stretch'
+  },
+  errorLabel: {
+    color: "red",
+    fontSize: 10
+  },
+  inputGroup: {
+	  marginBottom: 10
+  }
+});
+
+export default App;
